@@ -9,20 +9,23 @@
 #include <ctype.h>
 
 #define MAX_HEAP (30*1024)
-#define MAX_REF 3
+#define MAX_BIX_BITS 3
 #define MAX_BIX 7
+#define MAX_CID_BITS 5
 #define MAX_CID 31
+#define MAX_REFC_BITS 3
+#define MAX_REFC 7  /* 2**MAX_REFC_BITS -1*/
 
 typedef struct cell *pointer;
 struct cellheader {
    unsigned int mark:1;
    unsigned int b:1;	/*buddy*/
    unsigned int m:1;	/*memory*/
-   unsigned int bix:3; 	/*buddy index*/
+   unsigned int bix: MAX_BIX_BITS; 	/*buddy index - 3 bits*/
    unsigned int elmt:2; /*element type*/
-   unsigned int refc:2; /*reference count*/
-   unsigned int extra:1;
-   unsigned int cid:5;	/*class id*/
+   unsigned int refc: MAX_REFC_BITS; /*reference count 3 bits*/
+   /* unsigned int extra:1; */
+   unsigned int cid: MAX_CID_BITS;	/*class id 5 bits*/
   }  /*16 bits=short word in total*/
 
 /* structs for object oriented programming */
@@ -175,20 +178,6 @@ struct readtable {
   pointer dispatch;
   pointer readcase;};
 
-struct threadport {
-  pointer plist;
-  pointer id;
-  pointer requester;
-  pointer reqsem;
-  pointer runsem;
-  pointer donesem;
-  pointer func;
-  pointer args;
-  pointer result;
-  pointer contex;
-  pointer idle;
-  pointer wait;};
-
 /* extended numbers */
 struct ratio {
   pointer numerator;
@@ -205,6 +194,7 @@ struct bignum {
 
 
 
+/******************************************************************/
 
 struct cell {
    struct cellheader h;
@@ -236,5 +226,5 @@ struct cell {
       } c;
     } cell;
 
-
+#define inc_refc(x) (x->h.refc=min(x->h.refc+1, MAX_REFC))
 
